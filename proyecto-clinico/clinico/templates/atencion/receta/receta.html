@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% block header %}
+    {% include 'header.html' %}
+    {% load static %}
+{% endblock %}
+
+{% block main %}
+
+    <div class="container-fluid" style="margin-top: 3rem">
+        <div class="row">
+            <div class="col">
+                <div class="card ">
+                    <div class="row bg-success text-light p-0">
+                        <div class="col-md-8 mt-3">
+                            <h3 class=" ml-2 font-italic font-weight-bold">
+                                {{ title }}
+                            </h3>
+                        </div>
+                        <div class="col-md-4 ">
+                            <div class="float-right m-3">
+                                <a href="{% url 'atencion:receta' %}?id_paciente={{ id_paciente }}"
+                                   class="btn btn-warning">
+                                    Cancelar
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <form method="post" enctype="multipart/form-data" id="cabecera"
+                      class="form-horizontal form-label-left">
+                    <div class="row">
+
+                        <div class="col-6">
+                            <br>
+                            {% if form.errors %}
+                                <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
+                                    <strong> {{ form.errors }}</strong>
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            {% endif %}
+                            {% for campo in form %}
+                                <div class="form-group row">
+                                    <label class="col-md-2 col-form-label"
+                                           for="id_{{ campo.name }}">{{ campo.label }}</label>
+                                    <div class="col-md-10">
+                                        {{ campo }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-6">
+                            <div class="card table-responsive">
+                                <div class="row">
+                                    <div class="col-md-12" style="padding-top: 12px;">
+
+                                        <div class="form-group row">
+
+                                            <div class="col-4">
+                                                <select class="chosen-select form-control select2" id="cbarticulo"
+                                                        data-placeholder="Seleccione Articulo">
+                                                    <option value="">Seleccione Medicamente</option>
+                                                    {% for a in medicamento %}
+                                                        <option value="{{ a.id }}"
+                                                                data-ajson='{"id":"{{ a.id }}","foto":"{{ a.foto }}"}'>{{ a.descripcion }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                            <div class="col-4">
+                                                <input id="art-cantidad" class="form-control" min=0
+                                                       type="number" placeholder="Cant"/>
+                                            </div>
+
+                                            <div class="col-4">
+                                                <select class="chosen-select form-control select2" id="cbdosis"
+                                                        data-placeholder="Seleccione Dosis">
+                                                    <option value="">Seleccione Dosis</option>
+                                                    {% for a in dosis %}
+                                                        <option value="{{ a.id }}"
+                                                                data-ajson='{"id":"{{ a.id }}"}'>{{ a.descripcion }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="form-group row">
+
+                                            <div class="col-4">
+                                                <select class="chosen-select form-control select2" id="cbfrecuencia"
+                                                        data-placeholder="Seleccione Frecuencia">
+                                                    <option value="">Seleccione Frecuencia</option>
+                                                    {% for a in frecuencia %}
+                                                        <option value="{{ a.id }}"
+                                                                data-ajson='{"id":"{{ a.id }}"}'>{{ a.descripcion }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                            <div class="col-4">
+                                                <select class="chosen-select form-control select2" id="cbduracion"
+                                                        data-placeholder="Seleccione Duración">
+                                                    <option value="">Seleccione Duración</option>
+                                                    {% for a in duracion %}
+                                                        <option value="{{ a.id }}"
+                                                                data-ajson='{"id":"{{ a.id }}"}'>{{ a.descripcion }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="col-xs-1">
+                                            <button class="btn btn-primary form-control"
+                                                    id="btn-registrar">
+                                                <i class="fa fa-plus-circle"></i>
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <table class="table table-hover table-striped  m-1 ">
+                                        <thead class="bg-success text-light">
+                                        <tr class="h5">
+                                            <th>Foto</th>
+                                            <th>Medicamento</th>
+                                            <th>Cant</th>
+                                            <th>Dosis</th>
+                                            <th>Frecuencia</th>
+                                            <th>Duración</th>
+                                            <th class="text-center">Acciones</th>
+
+                                        </tr>
+                                        </thead>
+                                        <tbody class="delegacion-container" id="tdetalle">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <button class="btn btn-primary btn-block" id="id_actualizar" type="submit">Guardar Receta
+                        </button>
+
+
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/promise-polyfill"></script>
+{% endblock %}
+
+{% block jscript %}
+    <script>
+        token = "{{ csrf_token }}"
+
+        $(function () {
+            $("#cabecera").submit(async function (e) {
+                e.preventDefault();
+
+                if (app.orden.items.length > 0) {
+
+                    const parametros = new FormData(this);
+                    parametros.set("id_paciente", '{{ id_paciente }}')
+                    parametros.set("action", "add")
+                    parametros.set("csrfmiddlewaretoken", token)
+                    parametros.set("medicamentos", JSON.stringify(app.orden))
+                    console.log(parametros)
+
+                    const response = await fetch(`{% url "atencion:receta" %}`,
+                        {
+                            method: "POST",
+                            body: parametros
+                        }
+                    )
+                    const resultado = await response.json()
+                    if (resultado.result === "ok") {
+                        alert("Registro guardado con exito")
+                        setTimeout('window.location="{% url "atencion:receta" %}?id_paciente={{ id_paciente }}"', 500);
+
+                    }
+
+                } else {
+                    alert('Debe Ingresar Medicamentos al Detalle');
+                }
+
+
+            })
+        })
+
+        $(function () {
+
+            $('#btn-registrar').click(function (e) {
+                e.preventDefault();
+                var option = $('#cbarticulo option:selected');
+                var cbdosis = $('#cbdosis option:selected');
+                var cbfrecuencia = $('#cbfrecuencia option:selected');
+                var cbduracion = $('#cbduracion option:selected');
+                var cantidad = parseInt($('#art-cantidad').val());
+                var data = option.data('ajson');
+                var datadosis = cbdosis.data('ajson');
+                var datafrecuencia = cbfrecuencia.data('ajson');
+                var dataduracion = cbduracion.data('ajson');
+                var item = new Object();
+                item.id = data.id;
+                item.iddosis = datadosis.id;
+                item.idfrecuencia = datafrecuencia.id;
+                item.idduracion = dataduracion.id;
+                item.descripcion = option.text();
+                item.dosis = cbdosis.text();
+                item.frecuencia = cbfrecuencia.text();
+                item.duracion = cbduracion.text();
+                item.foto = data.foto;
+                item.cantidad = cantidad;
+                app.add(item);
+            });
+
+
+        });
+
+        var app = {
+            orden: {
+                items: []
+            },
+
+
+            add: function (item) {
+                if (!this.existe(item)) {
+                    this.orden.items.push(item);
+                }
+                this.presentar();
+                return true;
+            },
+            eliminar: function (id) {
+                console.log(this.orden.items.filter(elemento => elemento.id !== id))
+                for (var i in this.orden.items) {
+                    if (this.orden.items[i].id == id) {
+                        console.log('entro')
+                        this.orden.items.splice(i, 1)
+                        delete this.orden.items[i];
+                        this.presentar();
+                        return true;
+                    }
+                }
+                return false;
+            },
+            existe: function (item) {
+                for (var i in this.orden.items) {
+                    if (item.id === this.orden.items[i].id) {
+                        this.orden.items[i].cantidad += item.cantidad;
+                        return true;
+                    }
+                }
+                return false;
+            },
+            presentar: function () {
+                $('#tdetalle').html('');
+                for (var item of
+                    this.orden.items
+                    ) {
+                    var tr = '<tr>';
+                    tr += '<td> <img  class="img-thumbnail" id="presentaimg" src="/media/' + item.foto + '"' + 'width="50px"  onMouseOver="this.style.width=\'200px\'" onMouseOut="this.style.width=\'50px\'" /></td>';
+                    tr += '<td>' + item.descripcion + '</td>';
+                    tr += '<td>' + item.cantidad + '</td>';
+                    tr += '<td>' + item.dosis + '</td>';
+                    tr += '<td>' + item.frecuencia + '</td>';
+                    tr += '<td>' + item.duracion + '</td>';
+                    tr += '<td><center><a style="border-radius: 0 0 0px 0px; font-weight: bold;" onclick="app.eliminar(' + item.id + ')" class="btn btn-danger"><i class="fa fa-trash"></i> ELiminar</a></center></td>';
+                    tr += '</tr>';
+                    $('#tdetalle').append(tr);
+                }
+            },
+        }
+
+
+    </script>
+{% endblock %}

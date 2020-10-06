@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block header %}
+    {% include 'header.html' %}
+    {% load static %}
+{% endblock %}
+
+{% block main %}
+
+    <div class="container-fluid" style="margin-top: 3rem">
+        <div class="row">
+            <div class="col">
+                <div class="card ">
+                    <div class="row bg-success text-light p-0">
+                        <div class="col-md-8 mt-3">
+                            <h3 class=" ml-2 font-italic font-weight-bold">
+                                {{ title }}
+                            </h3>
+                        </div>
+                        <div class="col-md-4 ">
+                            <div class="float-right m-3">
+                                <a href="{% url 'atencion:receta' %}?id_paciente={{ id_paciente }}"
+                                   class="btn btn-warning">
+                                    Cancelar
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <form method="post" enctype="multipart/form-data" id="cabecera"
+                      class="form-horizontal form-label-left">
+                    <div class="row">
+
+                        <div class="col-6">
+                            <br>
+                            {% if form.errors %}
+                                <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
+                                    <strong> {{ form.errors }}</strong>
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            {% endif %}
+                            {% for campo in form %}
+                                <div class="form-group row">
+                                    <label class="col-md-2 col-form-label"
+                                           for="id_{{ campo.name }}">{{ campo.label }}</label>
+                                    <div class="col-md-10">
+                                        {{ campo }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-6">
+                            <div class="card table-responsive">
+
+                                <div class="row">
+                                    <table class="table table-hover table-striped  m-1 ">
+                                        <thead class="bg-success text-light">
+                                        <tr class="h5">
+                                            <th>Foto</th>
+                                            <th>Medicamento</th>
+                                            <th>Cant</th>
+                                            <th>Dosis</th>
+                                            <th>Frecuencia</th>
+                                            <th>Duración</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody class="delegacion-container" id="tdetalle">
+                                        {% for d in detalle %}
+                                            <tr>
+                                                <td><img src="{{ d.medicamento.foto.url }}" width="50px"></td>
+                                                <td>{{ d.medicamento.descripcion }}</td>
+                                                <td>{{ d.cantidad }}</td>
+                                                <td>{{ d.dosis.descripcion }}</td>
+                                                <td>{{ d.frecuencia.descripcion }}</td>
+                                                <td>{{ d.duracion.descripcion }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/promise-polyfill"></script>
+{% endblock %}
+
+{% block jscript %}
+{% endblock %}
